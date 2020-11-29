@@ -25,7 +25,6 @@ def main():
 
     for i in range(df.shape[0]):
     	eid = df.iloc[i,1]
-
     	peaks_bed = 'roadmap/%s-DNase.hotspot.fdr0.01.peaks.bed.gz' % eid
     	if os.path.isfile(peaks_bed):
     		print('%s\t%s' % (df.iloc[i,5], peaks_bed), file=beds_out)

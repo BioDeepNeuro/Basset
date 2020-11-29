@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 import sys
-
+import time
 import h5py
 import numpy as np
 
@@ -57,14 +57,14 @@ def main():
     target_beds = []
     target_dbi = []
     for line in open(target_beds_file):
-    	a = line.split()
+        a = line.split()
         if len(a) != 2:
-            print a
-            print >> sys.stderr, 'Each row of the target BEDS file must contain a label and BED file separated by whitespace'
+            print(a) 
+            print(sys.stderr, 'Each row of the target BEDS file must contain a label and BED file separated by whitespace')
             exit(1)
-    	target_dbi.append(len(db_targets))
-    	db_targets.append(a[0])
-    	target_beds.append(a[1])
+        target_dbi.append(len(db_targets))
+        db_targets.append(a[0])
+        target_beds.append(a[1])
 
     # read in chromosome lengths
     chrom_lengths = {}
@@ -74,7 +74,7 @@ def main():
             a = line.split()
             chrom_lengths[a[0]] = int(a[1])
     else:
-        print >> sys.stderr, 'Warning: chromosome lengths not provided, so regions near ends may be incorrect.'
+        print(sys.stderr, 'Warning: chromosome lengths not provided, so regions near ends may be incorrect.')
 
     #################################################################
     # print peaks to chromosome-specific files
@@ -93,8 +93,8 @@ def main():
             peak_bed_in = open(peak_beds[bi])
 
         for line in peak_bed_in:
-            if not line.startswith('#'):
-                a = line.split('\t')
+            if not line.decode('utf-8').startswith('#'):
+                a = line.decode('utf-8').split('\t')
                 a[-1] = a[-1].rstrip()
 
                 # hash by chrom/strand
@@ -121,9 +121,9 @@ def main():
                     if options.no_db_activity:
                         # set activity to null
                         a[6] = '.'
-                        print >> chrom_outs[chrom_key], '\t'.join(a[:7])
+                        print('\t'.join(a[:7]), file=chrom_outs[chrom_key])
                     else:
-                        print >> chrom_outs[chrom_key], line,
+                        print(line, file=chrom_outs[chrom_key])
 
                 # if it's a new bed
                 else:
@@ -132,7 +132,7 @@ def main():
                         a.append('')
                     a[5] = strand
                     a[6] = str(target_dbi[bi])
-                    print >> chrom_outs[chrom_key], '\t'.join(a[:7])
+                    print('\t'.join(a[:7]), file=chrom_outs[chrom_key])
 
         peak_bed_in.close()
 
@@ -145,7 +145,7 @@ def main():
         for orient in '+-':
             chrom_key = ('chrY',orient)
             if chrom_key in chrom_files:
-                print >> sys.stderr, 'Ignoring chrY %s' % orient
+                print(sys.stderr, 'Ignoring chrY %s' % orient)
                 os.remove(chrom_files[chrom_key])
                 del chrom_files[chrom_key]
 
@@ -156,7 +156,7 @@ def main():
             chrom,strand = chrom_key
             primary_m = primary_re.match(chrom)
             if not primary_m and chrom != 'chrX':
-                print >> sys.stderr, 'Ignoring %s %s' % (chrom,strand)
+                print(sys.stderr, 'Ignoring %s %s' % (chrom,strand))
                 os.remove(chrom_files[chrom_key])
                 del chrom_files[chrom_key]
 
@@ -208,7 +208,7 @@ def main():
 
                     # print to file
                     for mpeak in mpeaks:
-                        print >> final_bed_out, mpeak.bed_str(chrom, strand)
+                        print(mpeak.bed_str(chrom, strand), file=final_bed_out)
 
                     # initialize open peak
                     open_end = peak.end
@@ -225,7 +225,7 @@ def main():
 
             # print to file
             for mpeak in mpeaks:
-                print >> final_bed_out, mpeak.bed_str(chrom, strand)
+                print(mpeak.bed_str(chrom, strand), file=final_bed_out)
 
     final_bed_out.close()
 
@@ -241,7 +241,7 @@ def main():
 
     # print header
     cols = [''] + db_targets
-    print >> final_act_out, '\t'.join(cols)
+    print('\t'.join(cols), file=final_act_out)
 
     # print sequences
     for line in open('%s.bed' % options.out_prefix):
@@ -257,7 +257,7 @@ def main():
 
         # print line
         cols = [peak_id] + peak_act
-        print >> final_act_out, '\t'.join([str(c) for c in cols])
+        print('\t'.join([str(c) for c in cols]), file=final_act_out)
 
     final_act_out.close()
 
